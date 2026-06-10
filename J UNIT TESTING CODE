@@ -1,123 +1,150 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/UnitTests/JUnit5TestClass.java to edit this template
- */
-package com.mycompany.applicationsystem;
+package com.mycompany.loginclass;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- *
- * @author laptop
- */
-public class ApplicationSystemTest {
+public class LoginClassTest {
 
-    /**
-     * Test of checkUserName method
-     */
+    // Username Tests
+
     @Test
-    public void testCheckUserName() {
-
-        String username = "ab_cd";
-
-        boolean result = ApplicationSystem.checkUserName(username);
-
-        assertTrue(result);
+    public void testValidUsername() {
+        assertTrue(LoginClass.checkUserName("ab_cd"));
     }
 
-    /**
-     * Test of checkPassword method
-     */
     @Test
-    public void testCheckPassword() {
-
-        String password = "Password1!";
-
-        boolean result = ApplicationSystem.checkPassword(password);
-
-        assertTrue(result);
+    public void testInvalidUsername_NoUnderscore() {
+        assertFalse(LoginClass.checkUserName("abcd"));
     }
 
-    /**
-     * Test of login method
-     */
     @Test
-    public void testLogin() {
+    public void testInvalidUsername_TooLong() {
+        assertFalse(LoginClass.checkUserName("abc_de"));
+    }
 
-        String username = "ab_cd";
-        String password = "Password1!";
+    // Password Tests
 
-        boolean result = ApplicationSystem.login(
-                username,
-                password,
-                "ab_cd",
+    @Test
+    public void testValidPassword() {
+        assertTrue(LoginClass.checkPassword("Password1!"));
+    }
+
+    @Test
+    public void testInvalidPassword_NoCapital() {
+        assertFalse(LoginClass.checkPassword("password1!"));
+    }
+
+    @Test
+    public void testInvalidPassword_NoNumber() {
+        assertFalse(LoginClass.checkPassword("Password!"));
+    }
+
+    @Test
+    public void testInvalidPassword_NoSpecialCharacter() {
+        assertFalse(LoginClass.checkPassword("Password1"));
+    }
+
+    // Login Tests
+
+    @Test
+    public void testSuccessfulLogin() {
+        assertTrue(LoginClass.login(
+                "user_",
+                "Password1!",
+                "user_",
                 "Password1!"
-        );
-
-        assertTrue(result);
+        ));
     }
 
-    /**
-     * Test of validateNumber method
-     */
     @Test
-    public void testValidateNumber() {
-
-        String number = "+27123456789";
-
-        String result = ApplicationSystem.validateNumber(number);
-
-        assertEquals("Valid", result);
+    public void testFailedLogin() {
+        assertFalse(LoginClass.login(
+                "user_",
+                "WrongPass1!",
+                "user_",
+                "Password1!"
+        ));
     }
 
-    /**
-     * Test of createMessageHash method
-     */
+    // Phone Number Tests
+
+    @Test
+    public void testValidPhoneNumber() {
+        assertEquals(
+                "Valid",
+                LoginClass.validateNumber("+27831234567")
+        );
+    }
+
+    @Test
+    public void testInvalidPhoneNumber_WrongCountryCode() {
+        assertEquals(
+                "Invalid: must start with +27",
+                LoginClass.validateNumber("+12831234567")
+        );
+    }
+
+    @Test
+    public void testInvalidPhoneNumber_Length() {
+        assertEquals(
+                "Invalid: must be 12 digits (+27XXXXXXXXX)",
+                LoginClass.validateNumber("+2783123456")
+        );
+    }
+
+    // Hash Tests
+
     @Test
     public void testCreateMessageHash() {
 
-        String id = "1234567890";
-        int num = 1;
-        String msg = "Hello World";
+        String hash = LoginClass.createMessageHash(
+                "1234567890",
+                1,
+                "Hello Java"
+        );
 
-        String result = ApplicationSystem.createMessageHash(id, num, msg);
-
-        assertEquals("12:1:HELLOWORLD", result);
+        assertEquals(
+                "12:1:HELLOJAVA",
+                hash
+        );
     }
 
-    /**
-     * Test of storeMessage method
-     */
+    // Delete Message Tests
+
     @Test
-    public void testStoreMessage() {
+    public void testDeleteMessageByHash() {
 
-        ApplicationSystem.storeMessage();
+        LoginClass.ids.clear();
+        LoginClass.hashes.clear();
+        LoginClass.recipients.clear();
+        LoginClass.messages.clear();
+        LoginClass.timestamps.clear();
+        LoginClass.statusList.clear();
 
-        assertTrue(true);
+        LoginClass.ids.add("1234567890");
+        LoginClass.hashes.add("12:1:HELLOJAVA");
+        LoginClass.recipients.add("+27831234567");
+        LoginClass.messages.add("Hello Java");
+        LoginClass.timestamps.add("12:00:00");
+        LoginClass.statusList.add("SENT");
+
+        LoginClass.deleteByHash("12:1:HELLOJAVA");
+
+        assertEquals(0, LoginClass.messages.size());
     }
 
-    /**
-     * Test of showMessages method
-     */
+    // Search Tests
+
     @Test
-    public void testShowMessages() {
+    public void testMessageStoredCorrectly() {
 
-        ApplicationSystem.showMessages();
+        LoginClass.messages.clear();
 
-        assertTrue(true);
-    }
+        LoginClass.messages.add("JUnit Test Message");
 
-    /**
-     * Test of main method
-     */
-    @Test
-    public void testMain() {
-
-        String[] args = {};
-
-        assertDoesNotThrow(() -> {
-            // Do not run interactive main method in unit testing
-        });
+        assertEquals(
+                "JUnit Test Message",
+                LoginClass.messages.get(0)
+        );
     }
 }
